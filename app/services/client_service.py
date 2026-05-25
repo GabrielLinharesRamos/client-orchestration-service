@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 
 from app.repositories.client_repository import ClientRepository
 from app.schemas.client import ClientCreate
-
+from app.services.pipefy_services import PipefyService
 
 class ClientService:
 
@@ -36,5 +36,7 @@ class ClientService:
             db=db,
             client_data=client_data
         )
+
+        PipefyService.simulate_create_card(client)
 
         return client

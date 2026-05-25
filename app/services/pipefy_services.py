@@ -1,0 +1,59 @@
+from app.core.logger import get_logger
+
+logger = get_logger(__name__)
+
+CREATE_CARD_MUTATION = """
+mutation CreateCard($input: CreateCardInput!) {
+  createCard(input: $input) {
+    card {
+      id
+      title
+    }
+  }
+}
+"""
+
+class PipefyService:
+
+    @staticmethod
+    def build_create_card_payload(client):
+
+        return {
+            "query": CREATE_CARD_MUTATION,
+            "variables": {
+                "input": {
+                    "pipe_id": "123456",
+
+                    "fields_attributes": [
+                        {
+                            "field_id": "nome",
+                            "field_value": client.nome
+                        },
+                        {
+                            "field_id": "email",
+                            "field_value": client.email
+                        },
+                        {
+                            "field_id": "patrimonio",
+                            "field_value": str(client.valor_patrimonio)
+                        }
+                    ]
+                }
+            }
+        }
+
+    @staticmethod
+    def simulate_create_card(client):
+
+        payload = PipefyService.build_create_card_payload(client)
+
+        logger.info(
+            "pipefy_create_card_simulated",
+            extra={
+                "client_email": client.email,
+                "payload": payload
+            }
+        )
+
+        return payload
+
