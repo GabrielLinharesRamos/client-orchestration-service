@@ -2,7 +2,7 @@ services:
   postgres:
     image: postgres:16
 
-    container_name: client-orchestration-service
+    container_name: client-management-postgres
 
     restart: always
 
