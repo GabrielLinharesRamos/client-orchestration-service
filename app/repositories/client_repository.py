@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from app.domain.models.client import Client
+from app.models.client import Client
 
 
 class ClientRepository:
@@ -16,3 +16,15 @@ class ClientRepository:
         db.refresh(client)
 
         return client
+
+    @staticmethod
+    def get_by_email(
+        db: Session,
+        email: str
+    ):
+
+        return (
+            db.query(Client)
+            .filter(Client.email == email)
+            .first()
+        )

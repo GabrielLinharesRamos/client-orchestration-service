@@ -1,12 +1,9 @@
 from fastapi import FastAPI
-
-from app.core.database import engine
-from app.models.client import Client
-from app.core.database import Base
+from app.api.routes.clients import router as client_router
 
 app = FastAPI()
 
-Base.metadata.create_all(bind=engine)
+app.include_router(client_router)
 
 
 @app.get("/health")
