@@ -7,9 +7,9 @@ class Client(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    nome = Column(String, nullable=False)
+    cliente_nome = Column(String, nullable=False)
 
-    email = Column(String, unique=True, nullable=False)
+    cliente_email = Column(String, unique=True, nullable=False)
 
     tipo_solicitacao = Column(String, nullable=False)
 

@@ -98,3 +98,49 @@ Essa camada será responsável por operações como:
 - consultas futuras
 
 O objetivo dessa separação é manter a arquitetura mais organizada, desacoplada e escalável.
+
+#### Diagrama do fluxo da aplicação:
+
+![client_orchestration_diagram.drawio.svg](client_orchestration_diagram.drawio.svg)
+
+A aplicação segue uma arquitetura em camadas:
+
+- Routes: responsáveis pela camada HTTP
+- Request Schemas: validar e estruturar os dados recebidos pela API
+- Response Schemas: padronizar e serializar os dados retornados pela API.
+- Services: regras de negócio
+- Repositories: acesso ao banco de dados
+- Dependencies: gerenciamento de recursos compartilhados, como sessões do banco
+
+### 25-05-2026:
+
+#### Integração Pipefy (Simulada)
+
+Foi implementada uma camada de serviço dedicada para simular a integração com o Pipefy utilizando GraphQL.
+
+#### Pipefy Service
+
+A aplicação possui um `PipefyService` responsável por:
+
+- estruturar a mutation GraphQL `createCard`
+- montar dinamicamente o payload enviado ao Pipefy
+- simular o envio da requisição
+- registrar logs da integração
+
+Exemplo das responsabilidades da camada:
+
+- isolamento da integração externa
+- separação entre regra de negócio e comunicação externa
+- preparação da aplicação para futuras integrações reais
+
+#### Logging
+
+Foi adicionada instrumentação utilizando o módulo `logging` do Python.
+
+Atualmente os logs registram:
+
+- simulação de criação de card no Pipefy
+- geração do payload GraphQL
+- contexto da operação executada
+
+####

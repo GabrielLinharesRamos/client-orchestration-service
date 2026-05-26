@@ -26,12 +26,12 @@ class PipefyService:
 
                     "fields_attributes": [
                         {
-                            "field_id": "nome",
-                            "field_value": client.nome
+                            "field_id": "cliente_nome",
+                            "field_value": client.cliente_nome
                         },
                         {
-                            "field_id": "email",
-                            "field_value": client.email
+                            "field_id": "cliente_email",
+                            "field_value": client.cliente_email
                         },
                         {
                             "field_id": "patrimonio",

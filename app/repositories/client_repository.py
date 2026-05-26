@@ -20,11 +20,11 @@ class ClientRepository:
     @staticmethod
     def get_by_email(
         db: Session,
-        email: str
+        cliente_email: str
     ):
 
         return (
             db.query(Client)
-            .filter(Client.email == email)
+            .filter(Client.cliente_email == cliente_email)
             .first()
         )

@@ -2,12 +2,12 @@ from pydantic import BaseModel, EmailStr, field_validator
 
 
 class ClientCreate(BaseModel):
-    nome: str
-    email: EmailStr
+    cliente_nome: str
+    cliente_email: EmailStr
     tipo_solicitacao: str
     valor_patrimonio: float
 
-    @field_validator("nome", "tipo_solicitacao")
+    @field_validator("cliente_nome", "tipo_solicitacao")
     @classmethod
     def validate_not_empty(cls, value: str):
 
@@ -27,6 +27,6 @@ class ClientCreate(BaseModel):
 
 class ClientResponse(BaseModel):
     id: int
-    nome: str
-    email: EmailStr
+    cliente_nome: str
+    cliente_email: EmailStr
     status: str

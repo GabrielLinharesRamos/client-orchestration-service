@@ -14,7 +14,7 @@ class ClientService:
 
         existing_client = ClientRepository.get_by_email(
             db=db,
-            email=payload.email
+            cliente_email=payload.cliente_email
         )
 
         if existing_client:
@@ -24,8 +24,8 @@ class ClientService:
             )
 
         client_data = {
-            "nome": payload.nome,
-            "email": payload.email,
+            "cliente_nome": payload.cliente_nome,
+            "cliente_email": payload.cliente_email,
             "tipo_solicitacao": payload.tipo_solicitacao,
             "valor_patrimonio": payload.valor_patrimonio,
             "status": "Aguardando Análise",
