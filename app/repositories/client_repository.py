@@ -28,3 +28,12 @@ class ClientRepository:
             .filter(Client.cliente_email == cliente_email)
             .first()
         )
+
+    @staticmethod
+    def update(db: Session, client):
+
+        db.commit()
+
+        db.refresh(client)
+
+        return client
