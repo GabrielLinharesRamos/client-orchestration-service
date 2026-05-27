@@ -6,42 +6,41 @@ from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_db
 
-from app.schemas.client import (
-    PipefyWebhookPayload
-)
+from app.schemas.webhooks import PipefyWebhookPayload
 
-from app.services.client_service import (
-    ClientService
-)
+from app.services.webhook_service import WebhookService
+
 
 router = APIRouter(
-    prefix="/clientes",
-    tags=["clientes"]
+    prefix="/webhooks/pipefy",
+    tags=["webhooks"]
 )
 
 
 @router.post(
-    "",
-    response_model=ClientResponse,
-    status_code=201
+    "/card-updated",
+    status_code=200
 )
-def create_client(
-    payload: ClientCreate,
+def process_pipefy_webhook(
+    payload: PipefyWebhookPayload,
     db: Session = Depends(get_db)
 ):
 
     try:
 
-        client = ClientService.create_client(
+        event = WebhookService.process_webhook(
             db=db,
             payload=payload
         )
 
-        return client
+        return {
+            "message": "Webhook processado com sucesso",
+            "client": client
+        }
 
     except ValueError as error:
 
         raise HTTPException(
-            status_code=409,
+            status_code=400,
             detail=str(error)
         )

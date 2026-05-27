@@ -99,6 +99,8 @@ Essa camada será responsável por operações como:
 
 O objetivo dessa separação é manter a arquitetura mais organizada, desacoplada e escalável.
 
+---
+
 #### Diagrama do fluxo da aplicação:
 
 ![client_orchestration_diagram.drawio.svg](client_orchestration_diagram.drawio.svg)
@@ -118,6 +120,8 @@ A aplicação segue uma arquitetura em camadas:
 
 Foi implementada uma camada de serviço dedicada para simular a integração com o Pipefy utilizando GraphQL.
 
+---
+
 #### Pipefy Service
 
 A aplicação possui um `PipefyService` responsável por:
@@ -133,6 +137,8 @@ Exemplo das responsabilidades da camada:
 - separação entre regra de negócio e comunicação externa
 - preparação da aplicação para futuras integrações reais
 
+---
+
 #### Logging
 
 Foi adicionada instrumentação utilizando o módulo `logging` do Python.
@@ -143,4 +149,120 @@ Atualmente os logs registram:
 - geração do payload GraphQL
 - contexto da operação executada
 
-####
+### 26-05-2026:
+
+### Processamento de Webhooks e Idempotência
+
+Foi implementado o fluxo responsável pelo processamento de atualizações de cards simuladas via webhook do Pipefy.
+
+A aplicação agora é capaz de:
+
+- receber eventos externos de atualização de card
+- validar duplicidade de eventos (`event_id`)
+- atualizar o estado do cliente localmente
+- aplicar regras de negócio baseadas no patrimônio do cliente
+- persistir eventos processados para garantir idempotência
+
+---
+
+### Webhook Route
+
+Foi criado um novo router dedicado ao processamento de webhooks:
+
+```
+POST /webhooks/pipefy/card-updated
+```
+
+Responsabilidades da rota:
+
+- receber eventos simulados do Pipefy
+- validar payloads de entrada
+- encaminhar o processamento para a camada de serviço
+- tratar exceções da aplicação
+
+---
+
+### Webhook Service
+
+Foi implementado o `WebhookService`, responsável por centralizar a lógica de processamento do webhook.
+
+Principais responsabilidades:
+
+- verificar se o `event_id` já foi processado
+- buscar clientes utilizando o e-mail recebido no webhook
+- aplicar a regra de priorização baseada no patrimônio
+- atualizar o status do cliente para `"Processado"`
+- coordenar a persistência dos eventos processados
+
+Regras implementadas:
+
+- patrimônio maior ou igual a `200000` → `prioridade_alta`
+- patrimônio menor que `200000` → `prioridade_normal`
+
+---
+
+### Persistência de Eventos Processados
+
+Foi criada uma nova tabela no PostgreSQL:
+
+```
+processed_events
+```
+
+Objetivo da tabela:
+
+- armazenar eventos já processados
+- impedir reprocessamento de webhooks duplicados
+- garantir idempotência da aplicação
+
+Campos principais:
+
+- `event_id`
+- `client_email`
+- `processed_at`
+
+---
+
+### Repository Layer
+
+Foi implementado o `ProcessedEventRepository`, responsável por:
+
+- consultar eventos já processados
+- persistir novos eventos
+- isolar regras de acesso ao banco de dados
+
+Além disso, foram adicionadas operações de atualização de clientes já existentes.
+
+---
+
+### Schemas e Validação
+
+Foram criados novos schemas Pydantic para:
+
+- validação do payload do webhook
+- atualização de clientes existentes
+- padronização dos dados trafegados entre as camadas da aplicação
+
+As validações garantem:
+
+- formato correto de e-mail
+- tipagem consistente
+- estrutura adequada dos eventos recebidos
+
+---
+
+### Arquitetura
+
+A aplicação passou a possuir uma separação mais clara entre:
+
+- rotas HTTP
+- regras de negócio
+- persistência
+- integração externa simulada
+
+Essa estrutura facilita:
+
+- manutenção
+- escalabilidade
+- testes automatizados
+- futuras integrações reais com serviços externos como o Pipefy.

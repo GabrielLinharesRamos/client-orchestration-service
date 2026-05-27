@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from app.models.ProcessedEvent import ProcessedEvent
+from app.models.processed_event import ProcessedEvent
 
 
 class ProcessedEventRepository:

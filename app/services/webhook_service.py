@@ -7,6 +7,14 @@ from app.schemas.webhooks import PipefyWebhookPayload
 class WebhookService:
 
     @staticmethod
+    def calculate_priority(valor_patrimonio: float):
+
+        if valor_patrimonio >= 200000:
+            return "prioridade_alta"
+
+        return "prioridade_normal"
+
+    @staticmethod
     def process_webhook(
         db: Session,
         payload: PipefyWebhookPayload
@@ -29,25 +37,25 @@ class WebhookService:
             "processed_at": payload.timestamp
         }
 
-        event = ProcessedEventRepository.create(
-            db=db,
-            event_data=event_data
-        )
-
         client = ClientRepository.get_by_email(
             db,
             payload.cliente_email
         )
 
-        if client.valor_patrimonio >= 200000:
-            prioridade = "prioridade_alta"
-        else:
-            prioridade = "prioridade_normal"
+        if not client:
+            raise ValueError("Cliente não encontrado")
+
+        client.prioridade = WebhookService.calculate_priority(
+            client.valor_patrimonio
+        )
 
         client.status = "Processado"
 
-        client.prioridade = prioridade
-
         ClientRepository.update(db, client)
 
-        return event
+        event = ProcessedEventRepository.create(
+            db=db,
+            event_data=event_data
+        )
+
+        return client
