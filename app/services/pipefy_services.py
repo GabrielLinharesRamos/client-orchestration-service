@@ -34,7 +34,11 @@ class PipefyService:
                             "field_value": client.cliente_email
                         },
                         {
-                            "field_id": "patrimonio",
+                            "field_id": "tipo_solicitacao",
+                            "field_value": client.tipo_solicitacao
+                        },
+                        {
+                            "field_id": "valor_patrimonio",
                             "field_value": str(client.valor_patrimonio)
                         }
                     ]
