@@ -54,7 +54,7 @@ class PipefyService:
         logger.info(
             "pipefy_create_card_simulated",
             extra={
-                "client_email": client.client_email,
+                "client_email": client.cliente_email,
                 "payload": payload
             }
         )

@@ -35,7 +35,7 @@ def process_pipefy_webhook(
 
         return {
             "message": "Webhook processado com sucesso",
-            "client": client
+            "event": event
         }
 
     except ValueError as error:
