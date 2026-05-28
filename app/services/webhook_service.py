@@ -51,7 +51,7 @@ class WebhookService:
 
         client.status = "Processado"
 
-        ClientRepository.update(db, client)
+        client = ClientRepository.update(db, client)
 
         event = ProcessedEventRepository.create(
             db=db,

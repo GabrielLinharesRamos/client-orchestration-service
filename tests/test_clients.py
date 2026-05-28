@@ -1,49 +1,38 @@
-import uuid
+from tests.helpers import (
+    create_client,
+    build_client_payload
+)
 
-from tests.conftest import client
 
+def test_create_new_client():
 
-def create_client_and_assert(
-    cliente_nome,
-    cliente_email,
-    tipo_solicitacao,
-    valor_patrimonio,
-    response
-):
+    payload = build_client_payload()
 
-    payload = {
-        "cliente_nome": cliente_nome,
-        "cliente_email": cliente_email,
-        "tipo_solicitacao": tipo_solicitacao,
-        "valor_patrimonio": valor_patrimonio
-    }
+    response = create_client(payload)
 
-    response = client.post(
-        "/clientes",
-        json=payload
-    )
-
-    assert response.status_code == response
+    assert response.status_code == 201
 
     data = response.json()
 
-    assert data["cliente_nome"] == cliente_nome
+    assert data["cliente_nome"] == payload["cliente_nome"]
 
-    assert data["cliente_email"] == cliente_email
+    assert data["cliente_email"] == payload["cliente_email"]
 
     assert data["status"] == "Aguardando Análise"
 
-    return data
 
+def test_create_already_existing_client():
 
-def test_create_client_success():
+    payload = build_client_payload()
 
-    unique_email = f"{uuid.uuid4()}@example.com"
+    first_response = create_client(payload)
 
-    create_client_and_assert(
-        "João Silva",
-        unique_email,
-        "Atualização cadastral",
-        250000,
-        201
-    )
+    second_response = create_client(payload)
+
+    assert first_response.status_code == 201
+
+    assert second_response.status_code == 409
+
+    data = second_response.json()
+
+    assert data["detail"] == "Já existe um cliente com este email"

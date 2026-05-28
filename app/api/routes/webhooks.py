@@ -28,14 +28,16 @@ def process_pipefy_webhook(
 
     try:
 
-        event = WebhookService.process_webhook(
+        client = WebhookService.process_webhook(
             db=db,
             payload=payload
         )
 
+        print(client.status)
+
         return {
             "message": "Webhook processado com sucesso",
-            "event": event
+            "client": client
         }
 
     except ValueError as error:
