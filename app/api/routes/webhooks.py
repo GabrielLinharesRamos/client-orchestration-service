@@ -33,8 +33,6 @@ def process_pipefy_webhook(
             payload=payload
         )
 
-        print(client.status)
-
         return {
             "message": "Webhook processado com sucesso",
             "client": client

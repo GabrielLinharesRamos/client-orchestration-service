@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.repositories.client_repository import ClientRepository
 from app.repositories.processed_event_repository import ProcessedEventRepository
 from app.schemas.webhooks import PipefyWebhookPayload
+from app.services.pipefy_services import PipefyService
 
 class WebhookService:
 
@@ -52,6 +53,12 @@ class WebhookService:
         client.status = "Processado"
 
         client = ClientRepository.update(db, client)
+
+        PipefyService.simulate_update_card(
+            card_id=payload.card_id,
+            status=client.status,
+            prioridade=client.prioridade
+        )
 
         event = ProcessedEventRepository.create(
             db=db,
