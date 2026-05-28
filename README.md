@@ -266,3 +266,88 @@ Essa estrutura facilita:
 - escalabilidade
 - testes automatizados
 - futuras integrações reais com serviços externos como o Pipefy.
+
+### 28-05-2026:
+
+#### Webhook + Processamento de Eventos
+
+Foi implementado o fluxo completo de processamento de webhooks simulando eventos recebidos do Pipefy.
+
+A aplicação agora possui um endpoint responsável por:
+
+- receber eventos externos
+- validar duplicidade de eventos
+- aplicar regras de negócio
+- atualizar clientes no banco de dados
+- simular sincronização com o Pipefy via GraphQL
+
+---
+
+#### Idempotência de Eventos
+
+Foi criada a tabela `processed_events` para garantir idempotência no processamento de webhooks.
+
+A estratégia implementada consiste em:
+
+- verificar se um `event_id` já foi processado
+- bloquear reprocessamentos duplicados
+- registrar eventos consumidos no banco local
+
+Essa abordagem evita inconsistências causadas por múltiplos envios do mesmo webhook.
+
+---
+
+#### Regras de Negócio
+
+O webhook agora aplica regras de priorização baseadas no patrimônio do cliente:
+
+- patrimônio maior ou igual a `200000` → `prioridade_alta`
+- patrimônio menor que `200000` → `prioridade_normal`
+
+Além disso:
+
+- o status do cliente é atualizado para `Processado`
+- a prioridade calculada é persistida no banco
+
+---
+
+#### Integração Pipefy (Update de Card)
+
+Foi adicionada uma segunda mutation GraphQL simulando atualização de cards no Pipefy.
+
+A nova integração permite:
+
+- estruturar mutations de atualização (`updateCardField`)
+- enviar status e prioridade do cliente
+- simular sincronização do estado interno com o Pipefy
+- registrar logs da operação executada
+
+---
+
+#### Testes Automatizados
+
+Foram implementados testes automatizados cobrindo os principais fluxos da aplicação.
+
+Os testes atualmente validam:
+
+- criação de clientes
+- bloqueio de clientes duplicados
+- processamento correto do webhook
+- cálculo de prioridade alta
+- cálculo de prioridade normal
+- bloqueio de eventos duplicados (`event_id`)
+
+Também foi criada uma camada de helpers para reutilização de payloads e redução de duplicação nos testes.
+
+---
+
+#### Organização Arquitetural
+
+A aplicação passou a possuir uma separação mais clara entre responsabilidades:
+
+- `Repositories` → persistência de dados
+- `Services` → regras de negócio
+- `PipefyService` → integração externa simulada
+- `Routes` → exposição dos endpoints HTTP
+
+Essa estrutura facilita manutenção, escalabilidade e evolução futura da aplicação.
