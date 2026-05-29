@@ -291,7 +291,7 @@ Resultado esperado:
 
 ```
   {
-      "id": (numero identificador),
+    "id": (numero identificador),
     "cliente_nome": "Maria",
     "cliente_email": "maria@example.com",
     "tipo_solicitacao": "Atualização cadastral",
@@ -320,7 +320,7 @@ Resultado esperado:
 {
   "message": "Webhook processado com sucesso",
   "client": {
-      "id": (numero identificador),
+    "id": (numero identificador),
     "cliente_nome": "Maria",
     "cliente_email": "maria@example.com",
     "tipo_solicitacao": "Atualização cadastral",
@@ -351,6 +351,53 @@ Resultado esperado:
   "detail":"O evento já foi processado"
 }
 ```
+
+# Visão de Produção (AWS)
+
+Caso este projeto fosse executado em ambiente de produção na AWS, a arquitetura seguiria um modelo serverless e event-driven, visando escalabilidade, desacoplamento e resiliência.
+
+O fluxo da aplicação seria:
+
+![phase_3_diagram.drawio.svg](phase_3_diagram.drawio.svg)
+
+### API Gateway
+
+O API Gateway seria responsável por receber as requisições HTTP e encaminhá-las para a Lambda Producer, permitindo escalabilidade automática e integração nativa com serviços serverless.
+
+### Lambda Producer
+
+A Lambda Producer seria responsável por validar e transformar a requisição em um evento de domínio, enviando posteriormente a mensagem para uma fila SQS.
+
+### Amazon SQS
+
+O SQS seria utilizado para permitir processamento assíncrono e desacoplamento entre os componentes da aplicação. Essa abordagem ajuda a absorver picos de tráfego sem sobrecarregar o sistema consumidor.
+
+Além disso, a fila também permitiria retries automáticos em caso de falhas temporárias.
+
+### Dead Letter Queue (DLQ)
+
+Uma Dead Letter Queue seria utilizada para isolar mensagens que falharam múltiplas vezes durante o processamento, aumentando a resiliência do sistema e permitindo análise posterior dos erros.
+
+### Lambda Consumer
+
+A Lambda Consumer seria responsável pelo processamento das mensagens recebidas da fila SQS e persistência dos dados no banco.
+
+Para evitar duplicidade causada por retries da fila, seria implementada idempotência utilizando DynamoDB Conditional Writes.
+
+### DynamoDB
+
+O DynamoDB seria utilizado como banco de dados principal devido à sua baixa latência, alta disponibilidade e escalabilidade horizontal nativa.
+
+### Observabilidade
+
+A observabilidade da aplicação seria realizada utilizando CloudWatch Logs, métricas e alarmes para monitoramento de:
+
+- erros
+- latência
+- processamento
+- mensagens na DLQ
+
+Essa arquitetura permite maior tolerância a falhas, escalabilidade automática e desacoplamento entre os serviços da aplicação.
 
 # DEVLOG
 
@@ -443,7 +490,7 @@ O objetivo dessa separação é manter a arquitetura mais organizada, desacoplad
 
 ---
 
-#### Diagrama do fluxo da aplicação até o presente momento:
+#### Diagrama do fluxo da aplicação:
 
 ![client_orchestration_diagram.drawio.svg](client_orchestration_diagram.drawio.svg)
 
