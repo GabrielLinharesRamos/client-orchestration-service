@@ -443,7 +443,7 @@ O objetivo dessa separação é manter a arquitetura mais organizada, desacoplad
 
 ---
 
-#### Diagrama do fluxo da aplicação:
+#### Diagrama do fluxo da aplicação até o presente momento:
 
 ![client_orchestration_diagram.drawio.svg](client_orchestration_diagram.drawio.svg)
 
