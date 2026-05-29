@@ -1,14 +1,356 @@
 # Sistema Mundo Invest
 
-banco PostgreSQl rodando em um container Docker
+# Visão Geral
 
-- **`.env`**
-- SQLAlchemy conectado
-- model Client
-- model ProcessedEvent
-- tabelas criadas
-- **`/health`**
-- aplicação sobe sem erro
+O Sistema Mundo Invest é uma API backend desenvolvida em FastAPI responsável por:
+
+- gerenciamento de clientes
+- processamento de webhooks
+- integração simulada com Pipefy via GraphQL
+- controle de eventos processados com idempotência
+
+A aplicação foi construída utilizando arquitetura em camadas, separando responsabilidades entre rotas, serviços, schemas, models e repositórios.
+
+# Fluxo da Aplicação
+
+#### estrutura do projeto:
+
+![project_structure.svg](project_structure.svg)
+
+- Client → consumidor da API responsável por enviar requisições HTTP para a aplicação.
+- Routes → camada HTTP da aplicação responsável pelos endpoints, requests/responses.
+- Schemas (Pydantic) → validação e serialização dos dados de entrada e saída da API.
+- Dependencies → gerenciamento de recursos compartilhados da aplicação.
+- Services → camada responsável pelas regras de negócio e coordenação dos fluxos da aplicação.
+- Repositories → camada responsável pelo acesso e persistência dos dados no banco.
+- PostgreSQL → persistência permanente dos dados da aplicação.
+- PipefyService → responsável pela integração externa simulada com o Pipefy via GraphQL.
+- GraphQL → estrutura utilizada para comunicação com o Pipefy através de mutations.
+
+# Tecnologias utilizadas
+
+### Backend
+
+- FastAPI
+Framework principal da API.
+- Python
+Linguagem utilizada no projeto.
+- SQLAlchemy
+ORM utilizado para modelagem e persistência no banco.
+- Pydantic
+Validação de schemas e payloads.
+
+---
+
+### Banco de Dados
+
+- PostgreSQL
+Banco de dados principal da aplicação.
+- Docker
+Utilizado para subir o PostgreSQL em container.
+- psycopg2
+Driver de conexão entre Python e PostgreSQL.
+
+---
+
+### Testes
+
+- Pytest
+Framework de testes automatizados.
+- TestClient
+Cliente de testes HTTP utilizado nos endpoints.
+
+---
+
+### Integração / APIs
+
+- GraphQL
+Utilizado para estruturar as mutations do Pipefy.
+- Pipefy
+Sistema externo simulado via mutations GraphQL.
+
+---
+
+### Observabilidade / Logging
+
+- Logging nativo do Python (`logging`)
+
+# Estrutura do Projeto
+
+```
+client-orchestration-service/
+│
+├── app/
+│   │
+│   ├── api/
+│   │   │
+│   │   ├── dependencies.py         → dependências compartilhadas (DB session)
+│   │   │
+│   │   └── routes/
+│   │       ├── clients.py          → endpoint POST /clientes
+│   │       └── webhooks.py         → endpoint POST /webhooks/pipefy/card-updated
+│   │
+│   ├── core/
+│   │   │
+│   │   ├── database.py             → engine, session e Base do SQLAlchemy
+│   │   └── logger.py               → configuração centralizada de logging
+│   │
+│   ├── models/
+│   │   │
+│   │   ├── client.py               → model da tabela clients
+│   │   └── processed_event.py      → model da tabela processed_events
+│   │
+│   ├── repositories/
+│   │   │
+│   │   ├── client_repository.py    → persistência de clientes
+│   │   └── processed_event_repository.py → persistência de eventos processados
+│   │
+│   │
+│   ├── schemas/
+│   │   │
+│   │   ├── client.py               → schemas de request/response de clientes
+│   │   └── webhooks.py             → schemas do webhook Pipefy
+│   │
+│   ├── services/
+│   │   │
+│   │   ├── client_service.py       → regras de negócio de clientes
+│   │   ├── webhook_service.py      → processamento do webhook
+│   │   └── pipefy_services.py      → integração GraphQL simulada
+│   │
+│   └── main.py                     → inicialização da aplicação FastAPI
+│
+├── tests/
+│   │
+│   ├── conftest.py                 → configuração compartilhada dos testes
+│   ├── helpers.py                  → builders/helpers de payload
+│   │
+│   ├── test_clients.py             → testes de criação de clientes
+│   └── test_webhooks.py            → testes do fluxo de webhook
+│
+├── docker-compose.yml              → container PostgreSQL
+│
+├── requirements.txt                → dependências Python
+│
+├── .env                            → variáveis de ambiente
+│
+├── .env.exemplo                    → variáveis de ambiente(exemplo)
+│
+├── README.md                       → documentação do projeto
+│
+└── venv/                           → ambiente virtual Python
+```
+
+# Como executar o projeto
+
+### Pré-requisitos
+
+Antes de iniciar o projeto, certifique-se de possuir instalado:
+
+- Python 3.10+
+- Docker
+- Docker Compose
+
+---
+
+### 1. Clonar o repositório
+
+```bash
+git clone https://github.com/GabrielLinharesRamos/client-orchestration-service.git
+```
+
+```bash
+cd client-orchestration-service
+```
+
+---
+
+### 2. Criar e ativar ambiente virtual
+
+### Windows
+
+```bash
+python -m venv venv
+```
+
+```bash
+venv\Scripts\activate
+```
+
+### Linux / MacOS
+
+```bash
+python3 -m venv venv
+```
+
+```bash
+source venv/bin/activate
+```
+
+---
+
+### 3. Instalar dependências
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+### 4. Subir o PostgreSQL com Docker
+
+```bash
+docker-compose up -d
+```
+
+Verifique se o container está rodando:
+
+```bash
+docker ps
+```
+
+---
+
+### 5. Configurar variáveis de ambiente
+
+Crie um arquivo `.env` na raiz do projeto:
+
+```
+DATABASE_URL=postgresql://app_user:app_password@localhost:5432/client_management
+```
+
+---
+
+### 6. Executar a aplicação
+
+```bash
+uvicorn app.main:app --reload
+```
+
+A API ficará disponível em:
+
+```
+http://127.0.0.1:8000/
+```
+
+---
+
+### 7. Acessar documentação automática
+
+Swagger UI:
+
+```
+http://127.0.0.1:8000/docs
+```
+
+---
+
+### 8. Executar os testes automatizados
+
+Executar todos os testes:
+
+```bash
+pytest
+```
+
+Executar um arquivo específico:
+
+```bash
+pytest tests/test_clients.py
+```
+
+```bash
+pytest tests/test_webhooks.py
+```
+
+---
+
+### 9. Derrubar containers Docker
+
+```bash
+docker-compose down
+```
+
+# Exemplos de Requisição
+
+### Exemplo 1 — Criação de Cliente
+
+exemplo de requisição:
+
+```
+curl -X POST "http://127.0.0.1:8000/clientes" \
+-H "Content-Type: application/json" \
+-d '{
+  "cliente_nome": "Maria",
+  "cliente_email": "maria@example.com",
+  "tipo_solicitacao": "Atualização cadastral",
+  "valor_patrimonio": 300000
+}'
+```
+
+Resultado esperado:
+
+```
+  {
+      "id": (numero identificador),
+    "cliente_nome": "Maria",
+    "cliente_email": "maria@example.com",
+    "tipo_solicitacao": "Atualização cadastral",
+    "valor_patrimonio": "300000",
+    "status": "Aguardando Análise",
+    "prioridade": None
+  }
+```
+
+### Exemplo 2 — Webhook com Prioridade Alta
+
+```
+curl -X POST"http://127.0.0.1:8000/webhooks/pipefy/card-updated" \
+-H"Content-Type: application/json" \
+-d'{
+  "event_id": "evt_001",
+  "card_id": "card_001",
+  "cliente_email": "maria@example.com",
+  "timestamp": "2026-05-18T12:00:00Z"
+}'
+```
+
+Resultado esperado:
+
+```
+{
+  "message": "Webhook processado com sucesso",
+  "client": {
+      "id": (numero identificador),
+    "cliente_nome": "Maria",
+    "cliente_email": "maria@example.com",
+    "tipo_solicitacao": "Atualização cadastral",
+    "valor_patrimonio": "300000",
+    "status": "Processado",
+    "prioridade": "prioridade_alta"
+  }
+}
+```
+
+### Exemplo 3 — Webhook Duplicado (Idempotência)
+
+```
+curl -X POST"http://127.0.0.1:8000/webhooks/pipefy/card-updated" \
+-H"Content-Type: application/json" \
+-d'{
+  "event_id": "evt_001",
+  "card_id": "card_001",
+  "cliente_email": "maria@example.com",
+  "timestamp": "2026-05-18T12:00:00Z"
+}'
+```
+
+Resultado esperado:
+
+```
+{
+  "detail":"O evento já foi processado"
+}
+```
 
 # DEVLOG
 
@@ -52,8 +394,8 @@ Até o momento, a entidade possui campos relacionados às informações do clien
 - email
 - tipo de solicitação
 - patrimônio
-- status
-- prioridade
+- status ("Aguardando Análise”)
+- prioridade (none)
 
 ---
 
@@ -151,7 +493,7 @@ Atualmente os logs registram:
 
 ### 26-05-2026:
 
-### Processamento de Webhooks e Idempotência
+#### Processamento de Webhooks e Idempotência
 
 Foi implementado o fluxo responsável pelo processamento de atualizações de cards simuladas via webhook do Pipefy.
 
@@ -165,7 +507,7 @@ A aplicação agora é capaz de:
 
 ---
 
-### Webhook Route
+#### Webhook Route
 
 Foi criado um novo router dedicado ao processamento de webhooks:
 
@@ -182,7 +524,7 @@ Responsabilidades da rota:
 
 ---
 
-### Webhook Service
+#### Webhook Service
 
 Foi implementado o `WebhookService`, responsável por centralizar a lógica de processamento do webhook.
 
@@ -201,7 +543,7 @@ Regras implementadas:
 
 ---
 
-### Persistência de Eventos Processados
+#### Persistência de Eventos Processados
 
 Foi criada uma nova tabela no PostgreSQL:
 
@@ -223,7 +565,7 @@ Campos principais:
 
 ---
 
-### Repository Layer
+#### Repository Layer
 
 Foi implementado o `ProcessedEventRepository`, responsável por:
 
@@ -235,7 +577,7 @@ Além disso, foram adicionadas operações de atualização de clientes já exis
 
 ---
 
-### Schemas e Validação
+#### Schemas e Validação
 
 Foram criados novos schemas Pydantic para:
 
@@ -251,7 +593,7 @@ As validações garantem:
 
 ---
 
-### Arquitetura
+#### Arquitetura
 
 A aplicação passou a possuir uma separação mais clara entre:
 
@@ -267,7 +609,7 @@ Essa estrutura facilita:
 - testes automatizados
 - futuras integrações reais com serviços externos como o Pipefy.
 
-### 28-05-2026:
+### 27-05-2026:
 
 #### Webhook + Processamento de Eventos
 
@@ -280,34 +622,6 @@ A aplicação agora possui um endpoint responsável por:
 - aplicar regras de negócio
 - atualizar clientes no banco de dados
 - simular sincronização com o Pipefy via GraphQL
-
----
-
-#### Idempotência de Eventos
-
-Foi criada a tabela `processed_events` para garantir idempotência no processamento de webhooks.
-
-A estratégia implementada consiste em:
-
-- verificar se um `event_id` já foi processado
-- bloquear reprocessamentos duplicados
-- registrar eventos consumidos no banco local
-
-Essa abordagem evita inconsistências causadas por múltiplos envios do mesmo webhook.
-
----
-
-#### Regras de Negócio
-
-O webhook agora aplica regras de priorização baseadas no patrimônio do cliente:
-
-- patrimônio maior ou igual a `200000` → `prioridade_alta`
-- patrimônio menor que `200000` → `prioridade_normal`
-
-Além disso:
-
-- o status do cliente é atualizado para `Processado`
-- a prioridade calculada é persistida no banco
 
 ---
 
@@ -351,3 +665,5 @@ A aplicação passou a possuir uma separação mais clara entre responsabilidade
 - `Routes` → exposição dos endpoints HTTP
 
 Essa estrutura facilita manutenção, escalabilidade e evolução futura da aplicação.
+
+### 28-05-2026:

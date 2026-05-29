@@ -25,6 +25,8 @@ def test_webhook_priority_high():
 
     data = response.json()
 
+    assert data["message"] == 'Webhook processado com sucesso'
+
     assert data["client"]["status"] == "Processado"
 
     assert data["client"]["prioridade"] == "prioridade_alta"
@@ -47,6 +49,8 @@ def test_webhook_priority_low():
     assert response.status_code == 200
 
     data = response.json()
+    
+    assert data["message"] == 'Webhook processado com sucesso'
 
     assert data["client"]["status"] == "Processado"
 
