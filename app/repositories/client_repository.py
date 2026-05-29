@@ -32,6 +32,8 @@ class ClientRepository:
     @staticmethod
     def update(db: Session, client):
 
+        db.add(client)
+
         db.commit()
 
         db.refresh(client)

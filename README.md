@@ -667,3 +667,65 @@ A aplicação passou a possuir uma separação mais clara entre responsabilidade
 Essa estrutura facilita manutenção, escalabilidade e evolução futura da aplicação.
 
 ### 28-05-2026:
+
+### Refatoração da Documentação e Ajustes Gerais
+
+Hoje foi realizada uma refatoração da documentação do projeto, com foco em clareza, organização e melhoria da experiência de utilização da aplicação.
+
+Além disso, também foram corrigidos alguns bugs identificados durante os testes e validações dos fluxos da API.
+
+---
+
+### README
+
+O README foi reorganizado e expandido para refletir melhor a arquitetura e o funcionamento do sistema.
+
+Novas seções adicionadas:
+
+- visão geral da aplicação
+- fluxo da aplicação
+- tecnologias utilizadas
+- estrutura do projeto
+- guia de execução local
+- exemplos de utilização da API
+
+---
+
+### Correções e Ajustes
+
+Também foram realizados ajustes em partes da aplicação que apresentavam inconsistências durante os testes e execução local.
+
+Entre os ajustes realizados:
+
+- correção de informações incorretas no README
+- pequenos bugs relacionados aos fluxos da aplicação
+- alinhamento entre documentação e implementação real
+- melhorias na consistência dos testes automatizados
+
+### O Bug do "Print Fantasma" (`TypeError` / `KeyError`)
+
+Durante a execução dos testes do webhook, identificou-se que os testes só passavam se houvesse uma instrução `print(client.cliente_email)` logo após a atualização do cliente no serviço. Sem o `print`, a rota falhava ao tentar ler as propriedades `status` e `prioridade` para montar o JSON de resposta, resultando em erros de tipagem.
+
+**Causa Raiz:**
+Por padrão, o `sessionmaker` do SQLAlchemy possui a configuração `expire_on_commit=True`. Isso significa que, assim que o método `db.commit()` era executado no repositório, o ORM limpava todos os atributos do objeto `client` na memória para garantir a sincronia com o banco.
+
+- Quando o `print` era executado, o Python forçava uma nova consulta (*lazy loading*) para reidratar o objeto.
+- Sem o `print`, o FastAPI tentava serializar o objeto já expirado fora do escopo da transação ativa, quebrando o ciclo de resposta do `TestClient`.
+
+### Resolução e Ajustes na Camada de Core
+
+Para resolver o problema de forma definitiva e seguindo as boas práticas de arquitetura com FastAPI, foram realizadas as seguintes alterações:
+
+- **Configuração do Database (`app/core/database.py`):**
+Desativou-se a expiração automática de objetos pós-commit adicionando o parâmetro `expire_on_commit=False` ao `sessionmaker`. Isso garante que os dados persistidos continuem disponíveis na memória para a camada de apresentação (Rotas/Schemas).
+
+Python
+
+```
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine,
+    expire_on_commit=False # Mantém o estado do objeto legível pós-commit
+)
+```

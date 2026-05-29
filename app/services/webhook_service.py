@@ -52,6 +52,8 @@ class WebhookService:
 
         client.status = "Processado"
 
+        client = db.merge(client)
+
         client = ClientRepository.update(db, client)
 
         PipefyService.simulate_update_card(
